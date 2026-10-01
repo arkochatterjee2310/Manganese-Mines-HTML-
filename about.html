@@ -1,0 +1,174 @@
+<html lang="eng">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ore-Sentinel: AI Manganese Reserve Mapping & Fleet Optimization — MOIL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ffffff; --surface:#f8f9fa; --surface2:#e9ecef;
+  --blue:#0066cc; --blue-dim:#cce0ff; --ochre:#b98a4e;
+  --ink:#212529; --muted:#6c757d; --line:#dee2e6; --alert:#d9534f;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  box-sizing:border-box;
+}
+*{box-sizing:border-box;}
+html{scroll-padding-top:env(safe-area-inset-top,0px); scroll-behavior: smooth;}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  line-height:1.5; -webkit-font-smoothing:antialiased;
+  display: flex;
+}
+
+/* Sidebar Styling */
+aside{
+  width: 300px;
+  height: 100vh;
+  background: var(--surface);
+  border-right: 3px solid var(--line);
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+  box-shadow: 5px 5px 10px 0px rgba(0, 0, 0, 0.3);
+  text-shadow: 0.5px 0.5px 1px rgba(0, 0, 0, 0.5);
+}
+aside h3 {
+  font-size: 0.8rem;
+  color: var(--blue);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-top: 0.4rem;
+  margin-bottom: 0.1rem;
+}
+aside ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+aside a {
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 500;
+  transition: color 0.2s;
+  display: block;
+  padding: 0.15rem 0;
+}
+aside a:hover {
+  color: var(--blue);
+}
+
+.sidebar-data-snippet {
+  background: var(--surface2);
+  padding: 0.5rem 0.7rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.sidebar-data-snippet strong { color: var(--ink); }
+
+.sidebar-warning-box {
+  background: #fff3f3;
+  border-left: 3px solid var(--alert);
+  padding: 0.5rem 0.7rem;
+  border-radius: 0 6px 6px 0;
+  font-size: 0.75rem;
+  color: #5c1d1d;
+}
+
+/* Main Content Layout */
+.main-content {
+  margin-left: 300px;
+  flex: 1;
+  text-shadow: 0.75px 0.5px 0.5px rgba(0, 0, 0, 0.5);
+}
+
+.wrap{max-width:1080px;margin:0 auto;padding:2.2rem 2rem 4rem;}
+header.top{border-bottom:1px solid var(--line);padding-bottom:1.6rem;margin-bottom:1.8rem;}
+.eyebrow{color:var(--blue);font-size:.8rem;letter-spacing:.02em;margin-bottom:.5rem;font-weight: 600;}
+h1{font-size:clamp(1.7rem,4vw,2.6rem);color:var(--blue); margin:0;}
+.sub{color:var(--muted);max-width:55ch;margin-top:.6rem;font-size:.98rem;}
+
+section{margin-bottom:2.6rem;}
+h2{font-size:1.4rem;margin-bottom:.3rem;color:var(--blue);}
+.section-note{color:var(--muted);font-size:.88rem;margin-bottom:1rem;max-width:60ch;}
+
+.slider-row{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin:1.2rem 0 0.5rem;}
+input[type=range]{flex:1;min-width:180px;accent-color:var(--blue); cursor: pointer;}
+.predict-out{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1.2rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+.predict-out .n{font-family:'Fraunces',serif;font-size:1.5rem;color:var(--blue);}
+.predict-out .l{color:var(--muted);font-size:.78rem;margin-top:0.1rem;}
+.caveat{background:var(--surface2);border-left:3px solid var(--blue);padding:.7rem .9rem;border-radius:0 8px 8px 0;font-size:.82rem;color:var(--muted);margin-top:1rem;}
+
+footer{border-top:1px solid var(--line);padding-top:1.2rem;color:var(--muted);font-size:.8rem;}
+footer a{color:var(--blue);}
+</style>
+
+</head>
+<body>
+
+<aside>
+  <h3>Navigation</h3>
+  <ul>
+    <li><a href="index.html#overview">Overview & Context</a></li>
+    <li><a href="index.html#map-section">Geographic Share & Map</a></li>
+    <li><a href="index.html#pie-section">Reserve Share Pie Chart</a></li>
+    <li><a href="index.html#projection-section">Growth Projection</a></li>
+    <li><a href="index.html#efficiency-metrics">AI vs Manual Efficiency</a></li>
+    <li><a href="index.html#satellite-section">Satellite Proxies</a></li>
+    <li><a href="index.html#sustainability-risks">Sustainability & Opex</a></li>
+  </ul>
+
+  <h3>📊 Reserve Data</h3>
+  <div class="sidebar-data-snippet">
+    * <strong>Odisha:</strong> 44% (Keonjhar, Sundargarh)<br>
+    * <strong>Karnataka:</strong> 22% (Sandur-Hospet)<br>
+    * <strong>Madhya Pradesh:</strong> 12% (Balaghat)<br>
+    * <strong>Maharashtra & Goa:</strong> 7% each<br>
+    * <strong>Andhra Pradesh:</strong> 4% (Srikakulam)<br>
+    * <strong>Jharkhand & Others:</strong> 2% + 2%
+  </div>
+
+  <h3>⚙️ Grade Breakdown</h3>
+  <div class="sidebar-data-snippet">
+    * <strong>BF Grade:</strong> 28%<br>
+    * <strong>Medium Grade:</strong> 11%<br>
+    * <strong>Ferromanganese:</strong> 7%<br>
+    * <strong>Mixed/Unclassified:</strong> 54%
+  </div>
+
+  <h3>⚠️ Real-Time Risk Telemetry</h3>
+  <div class="sidebar-warning-box">
+    <strong>Warning:</strong> Unplanned shaft downtime or monsoon mudslides halt shifts instantly, burning ~₹2,500/hr in idle truck taxes.
+  </div>
+
+  <h3>Satellite Telemetry</h3>
+  <ul>
+    <li><a href="#overview">Check Satellite Telemetry</a></li>
+    <li><a href="">Satellite Data</a></li>
+  </ul>
+</aside>
+
+<div class="main-content">
+   <div class="wrap">
+
+    <header class="top" id="overview">
+      <div class="eyebrow">SIH 2026 · Challenge ID: SIH26009 · IIM Mumbai DSBM Team</div>
+      <h1>Satellite Telemetry</h1>
+    </header>
+   
+   </div>
+ </div>
+
+</body>
