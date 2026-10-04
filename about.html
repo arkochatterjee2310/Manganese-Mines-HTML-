@@ -1,0 +1,548 @@
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ore-Sentinel: AI Manganese Reserve Mapping & Fleet Optimization — MOIL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- PyScript CSS & JS CDN -->
+<link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
+<script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+
+<style>
+:root{
+  --bg:#ffffff; --surface:#f8f9fa; --surface2:#e9ecef;
+  --blue:#0066cc; --blue-dim:#cce0ff; --ochre:#b98a4e;
+  --ink:#212529; --muted:#6c757d; --line:#dee2e6; --alert:#d9534f;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  box-sizing:border-box;
+}
+*{box-sizing:border-box;}
+html{scroll-padding-top:env(safe-area-inset-top,0px); scroll-behavior: smooth;}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  line-height:1.5; -webkit-font-smoothing:antialiased;
+  display: flex;
+}
+
+/* Sidebar Styling */
+aside{
+  width: 300px;
+  height: 100vh;
+  background: var(--surface);
+  border-right: 3px solid var(--line);
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+  box-shadow: 5px 5px 10px 0px rgba(0, 0, 0, 0.3);
+  text-shadow: 0.5px 0.5px 1px rgba(0, 0, 0, 0.5);
+}
+aside h3 {
+  font-size: 0.8rem;
+  color: var(--blue);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-top: 0.4rem;
+  margin-bottom: 0.1rem;
+}
+aside ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+aside a {
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 500;
+  transition: color 0.2s;
+  display: block;
+  padding: 0.15rem 0;
+}
+aside a:hover {
+  color: var(--blue);
+}
+
+/* Main Content Layout */
+.main-content {
+  margin-left: 300px;
+  flex: 1;
+  text-shadow: 0.75px 0.5px 0.5px rgba(0, 0, 0, 0.5);
+}
+
+.wrap{max-width:1080px;margin:0 auto;padding:2.2rem 2rem 4rem;}
+header.top{border-bottom:1px solid var(--line);padding-bottom:1.6rem;margin-bottom:1.8rem;}
+.eyebrow{color:var(--blue);font-size:.8rem;letter-spacing:.02em;margin-bottom:.5rem;font-weight: 600;}
+h1{font-size:clamp(1.7rem,4vw,2.6rem);color:var(--blue); margin:0;}
+.sub{color:var(--muted);max-width:55ch;margin-top:.6rem;font-size:.98rem;}
+
+/* Explanation Card Style */
+.overview-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--blue);
+  border-radius: 6px;
+  padding: 1.5rem;
+  margin-bottom: 2.2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+.overview-card h3 {
+  margin-top: 0;
+  color: var(--blue);
+  font-size: 1.1rem;
+  margin-bottom: 0.8rem;
+}
+.overview-card p {
+  font-size: 0.92rem;
+  color: var(--ink);
+  margin-bottom: 0.8rem;
+  line-height: 1.6;
+}
+.overview-list {
+  list-style-type: disc;
+  padding-left: 1.2rem;
+  margin: 0.5rem 0 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.overview-list li strong {
+  color: var(--ink);
+}
+
+section{margin-bottom:2.6rem;}
+h2{font-size:1.4rem;margin-bottom:.3rem;color:var(--blue);}
+.section-note{color:var(--muted);font-size:.88rem;margin-bottom:1.2rem;max-width:60ch;}
+
+.simulation-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1.2rem;
+  margin-bottom: 1.8rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+}
+
+canvas {
+  border-radius: 6px;
+  border: 2px solid #adb5bd;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  cursor: grab;
+}
+canvas:active {
+  cursor: grabbing;
+}
+
+.card-note {
+  margin-top: 0.8rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed var(--line);
+  font-size: 0.76rem;
+  color: var(--muted);
+  text-align: center;
+  width: 100%;
+}
+
+/* Data Cards Grid for Regional Zones */
+.zones-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.2rem;
+}
+.zone-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 1.4rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.zone-card h3 {
+  color: var(--blue);
+  font-size: 1.1rem;
+  margin: 0;
+  border-bottom: 2px solid var(--blue-dim);
+  padding-bottom: 0.4rem;
+}
+.zone-meta {
+  font-size: 0.85rem;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.zone-meta span strong {
+  color: var(--ink);
+}
+.zone-desc {
+  font-size: 0.88rem;
+  color: var(--ink);
+  line-height: 1.5;
+  margin: 0;
+}
+
+footer{border-top:1px solid var(--line);padding-top:1.2rem;color:var(--muted);font-size:.8rem;}
+footer a{color:var(--blue);}
+</style>
+</head>
+<body>
+
+<aside>
+  <h3>Navigation</h3>
+  <ul>
+    <li><a href="index.html#overview">Overview & Context</a></li>
+    <li><a href="index.html#map-section">Geographic Share & Map</a></li>
+    <li><a href="index.html#pie-section">Reserve Share Pie Chart</a></li>
+    <li><a href="index.html#projection-section">Growth Projection</a></li>
+    <li><a href="index.html#efficiency-metrics">AI vs Manual Efficiency</a></li>
+    <li><a href="index.html#satellite-section">Satellite Proxies</a></li>
+    <li><a href="index.html#insights-section">Reserves & Risk Telemetry</a></li>
+    <li><a href="index.html#sustainability-risks">Sustainability & Opex</a></li>
+  </ul>
+
+  <h3>Satellite Telemetry</h3>
+  <ul>
+    <li><a href="#overview">Check Satellite Telemetry</a></li>
+    <li><a href="#telemetry-simulation">Regional Belts Overview</a></li>
+    <li><a href="#regional-data">Mining Zone Insights</a></li>
+  </ul>
+</aside>
+
+<div class="main-content">
+   <div class="wrap">
+
+    <header class="top" id="overview">
+      <div class="eyebrow">SIH 2026 · Challenge ID: SIH26009 · IIM Mumbai DSBM Team</div>
+      <h1>Satellite Telemetry & Regional Basins</h1>
+      <p class="sub">Multi-basin Python subsurface deposit mapping across India's key mineral corridors.</p>
+    </header>
+
+    <!-- Overview Explanation Section -->
+    <div class="overview-card">
+      <h3>🛰️ How Satellite Telemetry Accelerates Mineral Discovery</h3>
+      <p>
+        Satellite telemetry utilizes advanced <strong>multispectral and hyperspectral remote sensing</strong> from orbiting platforms to capture surface reflectance, thermal anomalies, and structural geology signatures across vast terrain regions. 
+      </p>
+      <p>
+        By integrating AI algorithms with remote sensing data, exploration teams can discover new high-potential mining deposits much faster and more efficiently through several key advantages:
+      </p>
+      <ul class="overview-list">
+        <li><strong>Rapid Regional Screening:</strong> Instantly narrows down hundreds of square kilometers of rough terrain to high-probability ore zones before conducting expensive ground surveys.</li>
+        <li><strong>Spectral Signature Matching:</strong> Identifies distinct chemical alterations, iron/manganese oxide exposures, and lateritic weathering patterns invisible to standard visual inspection.</li>
+        <li><strong>Cost & Risk Reduction:</strong> Lowers early-stage exploration capital expenditures and minimizes exploratory drilling risks in challenging terrains.</li>
+        <li><strong>Eco-Friendly Planning:</strong> Reduces preliminary surface disruption by pinpointing viable exploratory footprints prior to mobilization.</li>
+      </ul>
+    </div>
+
+    <section id="telemetry-simulation">
+      <h2>Regional Mining Belt Telemetry Feeds</h2>
+      <p class="section-note">Comparative Mock AI satellite spatial telemetry feeds mapped across India's premier manganese belts.</p>
+      
+      <!-- 1. Bonai-Kendujhar Basin (Odisha) -->
+      <div class="simulation-container">
+        <h3 style="color: var(--blue); margin-top:0; font-size:1.1rem; width:100%; text-align:left;">1. Bonai-Kendujhar Basin (Odisha)</h3>
+        <script type="py" config='{"packages": ["numpy"]}'>
+          import numpy as np
+          from pyscript import document
+          from pyodide.ffi import create_proxy
+
+          SIZE_BK = 75
+          np.random.seed(204)
+          mine_bk = np.zeros((SIZE_BK, SIZE_BK))
+          for _ in range(10):
+              x = np.random.randint(12, SIZE_BK - 12)
+              y = np.random.randint(12, SIZE_BK - 12)
+              r_val = np.random.randint(5, 14)
+              for i in range(SIZE_BK):
+                  for j in range(SIZE_BK):
+                      d = np.sqrt((i - x) ** 2 + (j - y) ** 2)
+                      if d < r_val: mine_bk[i, j] += (r_val - d) * 1.6
+          max_bk = mine_bk.max() if mine_bk.max() > 0 else 1.0
+
+          def color_bk(i, j, val):
+              rat = val / max_bk
+              if rat > 0.65: return 245, 158, 11
+              elif rat > 0.30: return 139, 69, 19
+              elif rat > 0.05: return 75, 65, 55
+              else:
+                  n = (np.sin(i * 0.3) + np.cos(j * 0.3)) * 8
+                  return int(52 + n), int(75 + n), int(58 + n)
+
+          c1 = document.getElementById("canvas-bk")
+          if c1:
+              ctx1 = c1.getContext("2d")
+              s1, ox1, oy1 = 5.8, 65.0, 20.0
+              drag1, sx1, sy1 = False, 0, 0
+
+              def draw_bk():
+                  ctx1.clearRect(0, 0, c1.width, c1.height)
+                  ctx1.save()
+                  ctx1.translate(ox1, oy1)
+                  ctx1.scale(s1, s1)
+                  for i in range(SIZE_BK):
+                      for j in range(SIZE_BK):
+                          r, g, b = color_bk(i, j, mine_bk[i, j])
+                          ctx1.fillStyle = f"rgb({r},{g},{b})"
+                          ctx1.fillRect(j, i, 1, 1)
+                  ctx1.restore()
+
+                  ctx1.strokeStyle = "#495057"; ctx1.lineWidth = 2
+                  ctx1.strokeRect(ox1, oy1, SIZE_BK * s1, SIZE_BK * s1)
+
+                  ctx1.fillStyle = "rgba(15, 23, 42, 0.9)"
+                  ctx1.fillRect(10, 10, c1.width - 20, 26)
+                  ctx1.fillStyle = "#ffffff"; ctx1.font = "bold 10px Inter, sans-serif"
+                  ctx1.fillText("📍 REGION: BONAI-KEONJHAR, ODISHA | LAT: 21.60° N, LONG: 85.58° E", 18, 26)
+
+                  ctx1.fillStyle = "rgba(255, 255, 255, 0.9)"
+                  ctx1.fillRect(c1.width - 150, 46, 140, 50)
+                  ctx1.strokeStyle = "#cbd5e1"; ctx1.strokeRect(c1.width - 150, 46, 140, 50)
+                  ctx1.fillStyle = "#1e293b"; ctx1.font = "bold 8px Inter, sans-serif"
+                  ctx1.fillText("LEGEND", c1.width - 142, 58)
+                  ctx1.fillStyle = "#f59e0b"; ctx1.fillRect(c1.width - 142, 64, 8, 8)
+                  ctx1.fillStyle = "#1e293b"; ctx1.font = "8px Inter, sans-serif"
+                  ctx1.fillText("High-Grade Core", c1.width - 130, 72)
+                  ctx1.fillStyle = "#344e41"; ctx1.fillRect(c1.width - 142, 78, 8, 8)
+                  ctx1.fillStyle = "#1e293b"; ctx1.fillText("Forest Canopy", c1.width - 130, 86)
+
+              c1.addEventListener("mousedown", create_proxy(lambda e: (globals().update(drag1=True, sx1=e.clientX - ox1, sy1=e.clientY - oy1))))
+              document.addEventListener("mousemove", create_proxy(lambda e: globals().get('drag1') and (globals().update(ox1=e.clientX - sx1, oy1=e.clientY - sy1), draw_bk())))
+              document.addEventListener("mouseup", create_proxy(lambda e: globals().update(drag1=False)))
+              draw_bk()
+        </script>
+        <canvas id="canvas-bk" width="640" height="340" style="width: 100%; max-width: 640px; height: 340px;"></canvas>
+        <div style="color: var(--muted); font-size: 0.78rem; margin-top: 0.5rem; text-align: center;">💡 Drag inside to pan map</div>
+        <div class="card-note"><strong>Geology:</strong> Lateritic manganese ore formation embedded within rolling green forest reserves.</div>
+      </div>
+
+      <!-- 2. Sandur-Hospet Belt (Karnataka) -->
+      <div class="simulation-container">
+        <h3 style="color: var(--blue); margin-top:0; font-size:1.1rem; width:100%; text-align:left;">2. Sandur-Hospet Belt (Karnataka)</h3>
+        <script type="py" config='{"packages": ["numpy"]}'>
+          import numpy as np
+          from pyscript import document
+          from pyodide.ffi import create_proxy
+
+          SIZE_SH = 75
+          np.random.seed(409)
+          mine_sh = np.zeros((SIZE_SH, SIZE_SH))
+          for _ in range(11):
+              x = np.random.randint(12, SIZE_SH - 12)
+              y = np.random.randint(12, SIZE_SH - 12)
+              r_val = np.random.randint(6, 15)
+              for i in range(SIZE_SH):
+                  for j in range(SIZE_SH):
+                      d = np.sqrt((i - x) ** 2 + (j - y) ** 2)
+                      if d < r_val: mine_sh[i, j] += (r_val - d) * 1.5
+          max_sh = mine_sh.max() if mine_sh.max() > 0 else 1.0
+
+          def color_sh(i, j, val):
+              rat = val / max_sh
+              if rat > 0.65: return 239, 68, 68
+              elif rat > 0.30: return 180, 83, 9
+              elif rat > 0.05: return 115, 90, 75
+              else:
+                  n = (np.sin(i * 0.4) + np.cos(j * 0.4)) * 7
+                  return int(210 + n), int(180 + n), int(140 + n)
+
+          c2 = document.getElementById("canvas-sh")
+          if c2:
+              ctx2 = c2.getContext("2d")
+              s2, ox2, oy2 = 5.8, 65.0, 20.0
+              drag2, sx2, sy2 = False, 0, 0
+
+              def draw_sh():
+                  ctx2.clearRect(0, 0, c2.width, c2.height)
+                  ctx2.save()
+                  ctx2.translate(ox2, oy2)
+                  ctx2.scale(s2, s2)
+                  for i in range(SIZE_SH):
+                      for j in range(SIZE_SH):
+                          r, g, b = color_sh(i, j, mine_sh[i, j])
+                          ctx2.fillStyle = f"rgb({r},{g},{b})"
+                          ctx2.fillRect(j, i, 1, 1)
+                  ctx2.restore()
+
+                  ctx2.strokeStyle = "#495057"; ctx2.lineWidth = 2
+                  ctx2.strokeRect(ox2, oy2, SIZE_SH * s2, SIZE_SH * s2)
+
+                  ctx2.fillStyle = "rgba(15, 23, 42, 0.9)"
+                  ctx2.fillRect(10, 10, c2.width - 20, 26)
+                  ctx2.fillStyle = "#ffffff"; ctx2.font = "bold 10px Inter, sans-serif"
+                  ctx2.fillText("📍 REGION: SANDUR-HOSPET, KARNATAKA | LAT: 15.11° N, LONG: 76.55° E", 18, 26)
+
+                  ctx2.fillStyle = "rgba(255, 255, 255, 0.9)"
+                  ctx2.fillRect(c2.width - 150, 46, 140, 50)
+                  ctx2.strokeStyle = "#cbd5e1"; ctx2.strokeRect(c2.width - 150, 46, 140, 50)
+                  ctx2.fillStyle = "#1e293b"; ctx2.font = "bold 8px Inter, sans-serif"
+                  ctx2.fillText("LEGEND", c2.width - 142, 58)
+                  ctx2.fillStyle = "#ef4444"; ctx2.fillRect(c2.width - 142, 64, 8, 8)
+                  ctx2.fillStyle = "#1e293b"; ctx2.font = "8px Inter, sans-serif"
+                  ctx2.fillText("High-Grade Deposit", c2.width - 130, 72)
+                  ctx2.fillStyle = "#d2b48c"; ctx2.fillRect(c2.width - 142, 78, 8, 8)
+                  ctx2.fillStyle = "#1e293b"; ctx2.fillText("Arid Plateau Soil", c2.width - 130, 86)
+
+              c2.addEventListener("mousedown", create_proxy(lambda e: (globals().update(drag2=True, sx2=e.clientX - ox2, sy2=e.clientY - oy2))))
+              document.addEventListener("mousemove", create_proxy(lambda e: globals().get('drag2') and (globals().update(ox2=e.clientX - sx2, oy2=e.clientY - sy2), draw_sh())))
+              document.addEventListener("mouseup", create_proxy(lambda e: globals().update(drag2=False)))
+              draw_sh()
+        </script>
+        <canvas id="canvas-sh" width="640" height="340" style="width: 100%; max-width: 640px; height: 340px;"></canvas>
+        <div style="color: var(--muted); font-size: 0.78rem; margin-top: 0.5rem; text-align: center;">💡 Drag inside to pan map</div>
+        <div class="card-note"><strong>Geology:</strong> Schist-belt iron and manganese ore configurations surrounded by Deccan plateau scrubland.</div>
+      </div>
+
+      <!-- 3. Balaghat Belt (Madhya Pradesh / Maharashtra Border) -->
+      <div class="simulation-container">
+        <h3 style="color: var(--blue); margin-top:0; font-size:1.1rem; width:100%; text-align:left;">3. Balaghat Belt (Madhya Pradesh / Maharashtra)</h3>
+        <script type="py" config='{"packages": ["numpy"]}'>
+          import numpy as np
+          from pyscript import document
+          from pyodide.ffi import create_proxy
+
+          SIZE_BG = 75
+          np.random.seed(512)
+          mine_bg = np.zeros((SIZE_BG, SIZE_BG))
+          for _ in range(9):
+              x = np.random.randint(12, SIZE_BG - 12)
+              y = np.random.randint(12, SIZE_BG - 12)
+              r_val = np.random.randint(6, 14)
+              for i in range(SIZE_BG):
+                  for j in range(SIZE_BG):
+                      d = np.sqrt((i - x) ** 2 + (j - y) ** 2)
+                      if d < r_val: mine_bg[i, j] += (r_val - d) * 1.7
+          max_bg = mine_bg.max() if mine_bg.max() > 0 else 1.0
+
+          def color_bg(i, j, val):
+              rat = val / max_bg
+              if rat > 0.65: return 217, 70, 239
+              elif rat > 0.30: return 126, 34, 206
+              elif rat > 0.05: return 90, 100, 85
+              else:
+                  n = (np.sin(i * 0.35) + np.cos(j * 0.35)) * 8
+                  return int(34 + n), int(90 + n), int(60 + n)
+
+          c3 = document.getElementById("canvas-bg")
+          if c3:
+              ctx3 = c3.getContext("2d")
+              s3, ox3, oy3 = 5.8, 65.0, 20.0
+              drag3, sx3, sy3 = False, 0, 0
+
+              def draw_bg():
+                  ctx3.clearRect(0, 0, c3.width, c3.height)
+                  ctx3.save()
+                  ctx3.translate(ox3, oy3)
+                  ctx3.scale(s3, s3)
+                  for i in range(SIZE_BG):
+                      for j in range(SIZE_BG):
+                          r, g, b = color_bg(i, j, mine_bg[i, j])
+                          ctx3.fillStyle = f"rgb({r},{g},{b})"
+                          ctx3.fillRect(j, i, 1, 1)
+                  ctx3.restore()
+
+                  ctx3.strokeStyle = "#495057"; ctx3.lineWidth = 2
+                  ctx3.strokeRect(ox3, oy3, SIZE_BG * s3, SIZE_BG * s3)
+
+                  ctx3.fillStyle = "rgba(15, 23, 42, 0.9)"
+                  ctx3.fillRect(10, 10, c3.width - 20, 26)
+                  ctx3.fillStyle = "#ffffff"; ctx3.font = "bold 10px Inter, sans-serif"
+                  ctx3.fillText("📍 REGION: BALAGHAT BELT, MP/MH | LAT: 21.98° N, LONG: 80.18° E", 18, 26)
+
+                  ctx3.fillStyle = "rgba(255, 255, 255, 0.9)"
+                  ctx3.fillRect(c3.width - 150, 46, 140, 50)
+                  ctx3.strokeStyle = "#cbd5e1"; ctx3.strokeRect(c3.width - 150, 46, 140, 50)
+                  ctx3.fillStyle = "#1e293b"; ctx3.font = "bold 8px Inter, sans-serif"
+                  ctx3.fillText("LEGEND", c3.width - 142, 58)
+                  ctx3.fillStyle = "#d946ef"; ctx3.fillRect(c3.width - 142, 64, 8, 8)
+                  ctx3.fillStyle = "#1e293b"; ctx3.font = "8px Inter, sans-serif"
+                  ctx3.fillText("High-Grade Core", c3.width - 130, 72)
+                  ctx3.fillStyle = "#22543d"; ctx3.fillRect(c3.width - 142, 78, 8, 8)
+                  ctx3.fillStyle = "#1e293b"; ctx3.fillText("Deciduous Forest", c3.width - 130, 86)
+
+              c3.addEventListener("mousedown", create_proxy(lambda e: (globals().update(drag3=True, sx3=e.clientX - ox3, sy3=e.clientY - oy3))))
+              document.addEventListener("mousemove", create_proxy(lambda e: globals().get('drag3') and (globals().update(ox3=e.clientX - sx3, oy3=e.clientY - sy3), draw_bg())))
+              document.addEventListener("mouseup", create_proxy(lambda e: globals().update(drag3=False)))
+              draw_bg()
+        </script>
+        <canvas id="canvas-bg" width="640" height="340" style="width: 100%; max-width: 640px; height: 340px;"></canvas>
+        <div style="color: var(--muted); font-size: 0.78rem; margin-top: 0.5rem; text-align: center;">💡 Drag inside to pan map</div>
+        <div class="card-note"><strong>Geology:</strong> Sausar Group stratigraphic manganese deposits embedded within dense central Indian forest terrain.</div>
+      </div>
+
+    </section>
+
+    <!-- NEW SECTION: Regional Mining Zones Data & Insights -->
+    <section id="regional-data">
+      <h2>Regional Mining Zones — Strategic Data & Insights</h2>
+      <p class="section-note">Key geological metrics, reserve characteristics, and operational focus areas for India's major mineral corridors.</p>
+      
+      <div class="zones-grid">
+        <!-- Zone 1 Data -->
+        <div class="zone-card">
+          <h3>1. Bonai-Kendujhar Basin (Odisha)</h3>
+          <div class="zone-meta">
+            <span><strong>Primary Minerals:</strong> Manganese & High-Grade Iron Ore</span>
+            <span><strong>Geological Belt:</strong> Iron Ore Group (IOG) / Lateritic Capping</span>
+            <span><strong>Reserve Potential:</strong> High (Major contributor to Eastern sector output)</span>
+          </div>
+          <p class="zone-desc">
+            Characterized by extensive lateritization and deep oxide ore formations. The basin exhibits high structural uniformity, making it ideal for automated satellite multispectral identification of exposed mineral bands and overburden optimization.
+          </p>
+        </div>
+
+        <!-- Zone 2 Data -->
+        <div class="zone-card">
+          <h3>2. Sandur-Hospet Belt (Karnataka)</h3>
+          <div class="zone-meta">
+            <span><strong>Primary Minerals:</strong> Hematite Iron Ore & Associated Manganese</span>
+            <span><strong>Geological Belt:</strong> Dharwar Schist Belt</span>
+            <span><strong>Reserve Potential:</strong> Very High (Southern India hub)</span>
+          </div>
+          <p class="zone-desc">
+            A prominent horseshoe-shaped synclinorium containing high-grade hematite ridges and folded manganese lenses. Remote sensing telemetry here effectively differentiates between iron-rich banded hematite quartzite (BHQ) and surrounding Deccan plateau scrubland.
+          </p>
+        </div>
+
+        <!-- Zone 3 Data -->
+        <div class="zone-card">
+          <h3>3. Balaghat Belt (MP / Maharashtra)</h3>
+          <div class="zone-meta">
+            <span><strong>Primary Minerals:</strong> Premium Grade Manganese Ore</span>
+            <span><strong>Geological Belt:</strong> Sausar Group Metamorphic Formation</span>
+            <span><strong>Reserve Potential:</strong> Exceptional (Core MOIL Underground/Open-cast hub)</span>
+          </div>
+          <p class="zone-desc">
+            Renowned for world-class continuous gondite and standard ore body formations. The complex structural folding requires precision AI sub-surface modeling to track downward mineral dips beneath dense deciduous forest cover.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      Ore-Sentinel Engine · SIH 2026 Project Submission (Challenge ID: SIH26009) · Built for MOIL Limited workflow integration.
+    </footer>
+
+   </div>
+</div>
+
+</body>
+</html>
